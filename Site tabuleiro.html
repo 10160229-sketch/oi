@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogo de Tabuleiro Educativo - Regras</title>
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+      h2 {
+        color: #34495e;
+        font-size: 2rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 5px;
+        margin-top: 30px;
+      }
+      h3 {
+        font-size: 1.5rem;
+        color: #2980b9;
+        margin-top: 20px;
+      }
+      ul,
+      ol {
+        margin-left: 40px;
+      }
+      ul li,
+      ol li {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+      }
+      ul {
+        list-style-type: disc;
+        padding-left: 20px;
+      }
+      p {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+      }
+      a {
+        color: #2980b9;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2.5rem;
+        }
+        h2 {
+          font-size: 1.8rem;
+        }
+        h3 {
+          font-size: 1.4rem;
+        }
+        p,
+        ul li,
+        ol li {
+          font-size: 1rem;
+        }
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tabuleiro Escolar</h1>
+      <h2>Grupo:</h2>
+      <ul>
+        <li>Eduardo</li>
+        <li>Andrews</li>
+        <li>Guilherme Forquim</li>
+        <li>Renato Torres</li>
+      </ul>
+      <h2>Apresentação</h2>
+      <p>
+        Este jogo de tabuleiro foi desenvolvido para proporcionar uma
+        experiência educativa e divertida, abordando várias matérias escolares.
+        Ele visa estimular o aprendizado através da interação com perguntas
+        desafiadoras em áreas como matemática, ciências, história e língua
+        portuguesa.
+      </p>
+      <h2>Público Alvo</h2>
+      <p>
+        Alunos de todas as idades que buscam revisar seus conhecimentos
+        escolares de maneira interativa e dinâmica.
+      </p>
+      <h2>Regras do Jogo</h2>
+      <h3>Componentes</h3>
+      <ul>
+        <li>
+          Tabuleiro colorido com caminhos que levam a diferentes áreas do
+          conhecimento.
+        </li>
+        <li>
+          Cartas de desafio, divididas por categorias (matemática, ciências,
+          história, português).
+        </li>
+        <li>Peões para cada jogador.</li>
+        <li>Um dado.</li>
+        <li>Fichas de pontos.</li>
+      </ul>
+      <h3>Como Jogar</h3>
+      <ol>
+        <li>
+          Cada jogador escolhe um peão e o posiciona na casa de início do
+          tabuleiro.
+        </li>
+        <li>
+          Os jogadores se revezam jogando o dado e avançando o número de casas
+          correspondentes.
+        </li>
+        <li>
+          Quando um jogador cai em uma casa de desafio, deve responder a uma
+          pergunta da categoria correspondente.
+        </li>
+        <li>
+          Respostas corretas garantem pontos e a chance de avançar mais casas.
+        </li>
+        <li>
+          Respostas erradas podem resultar em perda de pontos ou até mesmo de
+          turnos.
+        </li>
+      </ol>
+      <h3>Objetivo do Jogo</h3>
+      <p>
+        Acumular o maior número de pontos respondendo corretamente às perguntas
+        e ser o primeiro a chegar ao final do tabuleiro, sendo declarado o
+        "Mestre do Conhecimento".
+      </p>
+    </div>
+    <script>
+      let board = [];
+      let categories = [
+        "Normal",
+        "Matemática",
+        "Ciências",
+        "História",
+        "Português",
+      ];
+      let categoryColors = [
+        "#ffffff",
+        "#ff9999",
+        "#99ff99",
+        "#9999ff",
+        "#ffcc99",
+      ];
+      let players = [];
+      let boardSize = 700;
+      let cellSize = 70;
+      let draggedPlayer = null;
+      let playerAreaX = boardSize + 50;
+      let playerAreaY = 150;
+      let playerSpacing = 60;
+
+      let gameState = "menu"; // Estado do jogo: "menu", "playing", "end"
+      let numPlayers = 0; // Número de jogadores
+
+      function setup() {
+        createCanvas(boardSize + 200, boardSize + 100);
+        createBoard();
+      }
+
+      function draw() {
+        background(255);
+
+        if (gameState === "menu") {
+          drawMenu();
+        } else if (gameState === "playing") {
+          drawBoard();
+          drawPlayerArea();
+          drawPlayers();
+        } else if (gameState === "end") {
+          drawEndScreen();
+        }
+      }
+
+      // Função para desenhar o menu
+      function drawMenu() {
+        // Fundo do menu
+        fill(200, 220, 255);
+        rect(0, 0, width, height);
+
+        textAlign(CENTER);
+        textSize(32);
+        fill(0);
+        text("Escolha o Número de Jogadores", width / 2, height / 2 - 40);
+
+        for (let i = 2; i <= 4; i++) {
+          let buttonY = height / 2 + (i - 2) * 50;
+          fill(100, 150, 250);
+          rect(width / 2 - 75, buttonY - 20, 150, 40, 10); // Botão arredondado
+
+          fill(255);
+          textSize(24);
+          text(i + " Jogador" + (i > 1 ? "es" : ""), width / 2, buttonY);
+        }
+      }
+
+      // Captura o clique para selecionar o número de jogadores
+      function mousePressed() {
+        if (gameState === "menu") {
+          for (let i = 2; i <= 4; i++) {
+            let buttonY = height / 2 + (i - 2) * 50;
+            if (
+              mouseX > width / 2 - 75 &&
+              mouseX < width / 2 + 75 &&
+              mouseY > buttonY - 20 &&
+              mouseY < buttonY + 20
+            ) {
+              startGame(i);
+            }
+          }
+        } else if (gameState === "playing") {
+          for (let i = 0; i < players.length; i++) {
+            if (players[i].isMouseOver(mouseX, mouseY)) {
+              draggedPlayer = players[i];
+              draggedPlayer.dragging = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Função para iniciar o jogo
+      function startGame(num) {
+        numPlayers = num;
+        players = []; // Limpa jogadores
+        for (let i = 1; i <= numPlayers; i++) {
+          players.push(
+            new Player(
+              "Jogador " + i,
+              color(random(255), random(255), random(255)),
+              i - 1
+            )
+          );
+        }
+        gameState = "playing"; // Altera o estado para "jogando"
+      }
+
+      // Função para criar o tabuleiro
+      function createBoard() {
+        let positions = [];
+        let startX = 50;
+        let startY = 50;
+        let numLayers = 6;
+
+        for (let layer = 0; layer < numLayers; layer++) {
+          for (let i = 0; i < numLayers - layer; i++) {
+            let x = startX + i * cellSize + layer * (cellSize / 2);
+            let y = startY + layer * cellSize;
+            positions.push({ x: x, y: y });
+          }
+        }
+
+        for (let i = 0; i < positions.length; i++) {
+          let categoryIndex = i % categories.length;
+          let specialCategory =
+            i === 0
+              ? "Início"
+              : i === positions.length - 1
+              ? "Fim"
+              : categories[categoryIndex];
+          let specialColor =
+            i === 0
+              ? "#ffff66"
+              : i === positions.length - 1
+              ? "#ff6666"
+              : categoryColors[categoryIndex];
+
+          board.push({
+            x: positions[i].x,
+            y: positions[i].y,
+            category: specialCategory,
+            color: specialColor,
+          });
+        }
+      }
+
+      function drawBoard() {
+        for (let i = 0; i < board.length; i++) {
+          fill(board[i].color);
+          rect(board[i].x, board[i].y, cellSize, cellSize);
+          fill(0);
+          textAlign(CENTER, CENTER);
+          textSize(12);
+          text(
+            board[i].category,
+            board[i].x + cellSize / 2,
+            board[i].y + cellSize / 2
+          );
+        }
+      }
+
+      function drawPlayerArea() {
+        fill(200);
+        rect(playerAreaX - 20, playerAreaY - 50, 100, 250);
+        fill(0);
+        textSize(16);
+        textAlign(CENTER, CENTER);
+        text("Área dos Peões", playerAreaX + 30, playerAreaY - 70);
+      }
+
+      function drawPlayers() {
+        for (let i = 0; i < players.length; i++) {
+          let player = players[i];
+          fill(player.color);
+          ellipse(player.x, player.y, 30, 30);
+        }
+      }
+
+      // Função para desenhar a tela de fim de jogo
+      function drawEndScreen() {
+        background(200, 220, 255);
+        textAlign(CENTER);
+        textSize(32);
+        fill(0);
+        text("Fim de Jogo!", width / 2, height / 2 - 20);
+
+        let winner = players[0].name; // Substituir isso pela lógica para determinar o vencedor
+        textSize(24);
+        text(winner + " venceu!", width / 2, height / 2 + 20);
+      }
+
+      // Classe para o jogador
+      class Player {
+        constructor(name, color, id) {
+          this.name = name;
+          this.color = color;
+          this.id = id;
+          this.position = -1;
+          this.x = playerAreaX + 30;
+          this.y = playerAreaY + id * playerSpacing;
+          this.radius = 15;
+          this.dragging = false;
+        }
+
+        updatePosition(x, y) {
+          this.x = x;
+          this.y = y;
+        }
+
+        isMouseOver(mx, my) {
+          return dist(mx, my, this.x, this.y) < this.radius;
+        }
+      }
+
+      function mouseDragged() {
+        if (draggedPlayer && draggedPlayer.dragging) {
+          draggedPlayer.updatePosition(mouseX, mouseY);
+        }
+      }
+
+      function mouseReleased() {
+        if (draggedPlayer) {
+          draggedPlayer.dragging = false;
+          if (draggedPlayer.position >= board.length - 1) {
+            gameState = "end";
+          }
+          draggedPlayer = null;
+        }
+      }
+    </script>
+  </body>
+</html>
